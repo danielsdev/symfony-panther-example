@@ -9,27 +9,26 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Panther\Client;
 
 #[AsCommand(
-    name: 'crawler:speakers',
-    description: '.',
+    name: 'crawler:google',
+    description: 'Google search example.',
     hidden: false,
-    aliases: ['crawler:speakers']
+    aliases: ['crawler:google']
 )]
-class SpeakersCommand extends Command
+class GoogleCommand extends Command
 {
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $client = Client::createFirefoxClient();
+        $client = Client::createChromeClient();
 
-        $crawler = $client->request('GET', 'https://php.locaweb.com.br/');
+        $crawler = $client->request('GET', 'https://google.com.br/');
         $client->manage()->window()->maximize();
 
-        $script = <<<JS
-            const element = document.querySelector('#palestrantes');
-            element.scrollIntoView();
-        JS;
+        $crawler->filter('textarea[type="search"]')->sendKeys('LOCAWEB');
 
-        $client->executeScript($script);
-        $client->takeScreenshot('speakers.png');
+        $searchButton = $crawler->selectButton('Pesquisa Google');
+        $client->submit($searchButton->form());
+
+        sleep(10);
 
         return Command::SUCCESS;
     }
